@@ -63,3 +63,40 @@ def runEncrypt():
     restart = input("Would you like to encode/decode another image? (y / n): ")
     if restart.lower() == "y":
         main()
+
+
+def runDecrypt():
+    # r before string tells python to treat string as raw data so backslashes are preserved
+    inputImage = input(r"Please enter the absolute path to the image you want to extract the message from: ")
+    if not inputImage.isascii():
+        runDecrypt()
+    image = Image.open(inputImage)
+    imageArray = np.array(image)
+    arrayShape = imageArray.shape
+    length = imageArray.shape[0]
+    height = imageArray.shape[1]
+    channels = imageArray.shape[2]
+    totalPixels = length * height
+    # flattens image array into 1d array to help with processing
+    imageArray = imageArray.reshape(totalPixels, 1, channels)
+    text = ""
+    count = 0
+    flag = True
+    # Reads every group of three pixels and extracts the data until the end of the message is reached
+    while flag:
+        value = ""
+        for i in range(3):
+            for j in range(3):
+                pixelVal = imageArray[count + i][0][j]
+                if i == 2 and j == 2 and pixelVal % 2 == 1:
+                    flag = False
+                    break
+                value += str(pixelVal % 2)
+        text += convertToString(value)
+        count += 3
+    print(f'The encoded message was: {text}')
+    restart = input("Would you like to encode/decode another image? (y / n): ")
+    if restart.lower() == "y":
+        main()
+
+main()
