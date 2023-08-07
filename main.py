@@ -1,3 +1,4 @@
+from helpers import convertToString, progressBar
 from PIL import Image
 import numpy as np
 import os
@@ -38,6 +39,7 @@ def runEncrypt():
     # Flattens image into 1D array for easier processing
     imageArray = imageArray.reshape(totalPixels, 1, channels)
     for i in range(len(inputText)):
+        progressBar(i, len(inputText))
         # Converts the corresponding letter into a binary number
         unformattedStrToBin = str(bin(ord(inputText[i])))
         # Converts the binary number into an easier-to-process form
