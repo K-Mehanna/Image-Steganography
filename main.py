@@ -1,41 +1,60 @@
-from helpers import convertToString, progressBar
 from PIL import Image
 import numpy as np
 import os
 
+def convertToString(binString):
+    powers = [128, 64, 32, 16, 8, 4, 2, 1]
+    total = 0
+    for i in range(8):
+        total += int(binString[i]) * powers[i]
+    return chr(total)
+
+def progressBar(current, total, bar_length = 20):
+    printVal = current + 1
+    denomFactor = 100 / total
+    percent = int(printVal * denomFactor)
+    arrow   = '-' * int(percent/100 * bar_length - 1) + '>'
+    spaces  = ' ' * (bar_length - len(arrow))
+
+    print(f'Progress: [{arrow}{spaces}] {percent}%')
+
 def main():
-    inputType = input("Encrypt or decrypt (e or d): ").lower()
+    inputType = input("Encode or decode (e or d): ").lower()
     while inputType != "e" and inputType != "d":
-        inputType = input("Encrypt or decrypt (e or d): ")
+        inputType = input("Encode or decode (e or d): ")
     if inputType == "e":
-        runEncrypt()
+        runEncode()
     else:
-        runDecrypt()
+        runDecode()
 
 # Each character in the text is converted to its ascii value, and represented in binary
 # The pixels in the image are grouped into 3s
 # The rgb values in each pixel are changed to be even to represent a 0, or odd to represent a 1
 
-def runEncrypt():
+def runEncode():
     # r before string tells python to treat string as raw data so backslashes are preserved
     inputImage = input(r"Please enter the absolute path to the image you want to encrypt the message into: ")
     if not inputImage.isascii():
         print("Please enter a valid path")
-        runEncrypt()
-    image = Image.open(inputImage)
+        runEncode()
+    try:
+        image = Image.open(inputImage)
+    except:
+        print("The path led to an invalid/non-existent image")
+        runEncode()
     imageArray = np.array(image)
     arrayShape = imageArray.shape
     length = imageArray.shape[0]
     height = imageArray.shape[1]
     channels = imageArray.shape[2]
     totalPixels = length * height
-    inputText = input(r"Please enter the text you want to encrypt: ")
+    inputText = input(r"Please enter the text you want to encode: ")
     while not inputImage.isascii():
-        inputText = input(r"Please enter the text you want to encrypt: ")
+        inputText = input(r"Please enter the text you want to encode: ")
     # Each character takes three pixels to encode
     if len(inputText) > totalPixels / 3:
-        print("Text too long to be encrypted in image")
-        runEncrypt()
+        print("Text too long to be encoded in image")
+        runEncode()
     # Flattens image into 1D array for easier processing
     imageArray = imageArray.reshape(totalPixels, 1, channels)
     for i in range(len(inputText)):
@@ -58,21 +77,27 @@ def runEncrypt():
     reshapedImageArray = np.reshape(imageArray, arrayShape, "C")
     newImage = Image.fromarray(reshapedImageArray)
     splitPath = os.path.splitext(inputImage)
-    newPath = splitPath[0] + "_encrypted" + splitPath[1]
+    newPath = splitPath[0] + "_encoded" + splitPath[1]
     newImage.save(newPath)
     print('Done!')
     print(f"Your encoded image has been saved at path: {newPath}")
     restart = input("Would you like to encode/decode another image? (y / n): ")
     if restart.lower() == "y":
         main()
+    else:
+        print("Thanks, bye!")
 
 
-def runDecrypt():
+def runDecode():
     # r before string tells python to treat string as raw data so backslashes are preserved
     inputImage = input(r"Please enter the absolute path to the image you want to extract the message from: ")
     if not inputImage.isascii():
-        runDecrypt()
-    image = Image.open(inputImage)
+        runDecode()
+    try:
+        image = Image.open(inputImage)
+    except:
+        print("The path led to an invalid/non-existent image")
+        runEncode()
     imageArray = np.array(image)
     arrayShape = imageArray.shape
     length = imageArray.shape[0]
@@ -100,5 +125,8 @@ def runDecrypt():
     restart = input("Would you like to encode/decode another image? (y / n): ")
     if restart.lower() == "y":
         main()
+    else:
+        print("Thanks, bye!")
 
 main()
+
